@@ -1,0 +1,3 @@
+[submodule "Editor/ThirdParties/UnityHTTP"]
+	path = Editor/ThirdParties/UnityHTTP
+	url = https://github.com/andyburke/UnityHTTP.git
