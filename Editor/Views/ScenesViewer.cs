@@ -44,10 +44,7 @@ namespace ScenesTeamManagement
           }
         }
 
-        if (scene.Blocked)
-        {
-          EditorGUILayout.LabelField ("Blocked by " + scene.Owner);
-        }
+        EditorGUILayout.LabelField (scene.Blocked ? ("Blocked by " + scene.Owner) : string.Empty);
 
         EditorGUILayout.EndHorizontal ();
       }
