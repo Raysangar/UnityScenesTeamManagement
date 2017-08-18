@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEditor;
 
 namespace ScenesTeamManagement
 {
@@ -11,7 +12,17 @@ namespace ScenesTeamManagement
       {
         if (instance == null)
         {
-          instance = Resources.Load<ProjectSettings> ("Scenes Team Management Settings");
+          string[] guids = AssetDatabase.FindAssets ("t:ScenesTeamManagement.ProjectSettings");
+          if (guids.Length == 0)
+          {
+            instance = CreateInstance<ProjectSettings> ();
+            AssetDatabase.CreateAsset (instance, InstanceDefaultPath);
+            AssetDatabase.SaveAssets ();
+          }
+          else
+          {
+            instance = AssetDatabase.LoadAssetAtPath<ProjectSettings> (AssetDatabase.GUIDToAssetPath(guids[0]));
+          }
         }
         return instance;
       }
@@ -56,5 +67,7 @@ namespace ScenesTeamManagement
     private SlackSettings slackSettings;
 
     private static ProjectSettings instance;
+
+    private const string InstanceDefaultPath = "Assets/Plugins/STMProjectSettings.asset";
   }
 }

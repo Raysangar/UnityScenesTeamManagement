@@ -59,7 +59,7 @@
     {
       OnSceneBlockedBy (TrelloAPI.Instance.UserName);
       TrelloAPI.Instance.CheckItemOn (checkItemId, Name + " - " + owner, true);
-      SlackAPI.SendMessage ("Scene " + Name + " blocked by" + owner);
+      SlackAPI.SendMessage ("Scene " + Name + " blocked by " + owner);
     }
 
     public void OnSceneFreed ()
