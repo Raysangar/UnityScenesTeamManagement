@@ -7,6 +7,11 @@ namespace ScenesTeamManagement
   {
     public static void SendMessage (string message)
     {
+      if (!ProjectSettings.Instance.SlackIntegrationEnabled)
+      {
+        return;
+      }
+
       var form = new WWWForm ();
 
       form.AddField ("payload", MiniJSON.Json.Serialize (new Dictionary<string, string> () { { "text", message } }));

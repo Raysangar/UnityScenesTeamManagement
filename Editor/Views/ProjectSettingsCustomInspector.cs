@@ -19,7 +19,15 @@ namespace ScenesTeamManagement
 
       EditorGUILayout.LabelField ("Slack Parameters");
 
+      projectSettings.SlackIntegrationEnabled = EditorGUILayout.Toggle ("Slack Integration", projectSettings.SlackIntegrationEnabled);
+
+      if (!projectSettings.SlackIntegrationEnabled)
+      {
+        GUI.enabled = false;
+      }
       projectSettings.SlackSettings.WebhookUrl = EditorGUILayout.TextField ("Webhook URL", projectSettings.SlackSettings.WebhookUrl);
+
+      GUI.enabled = true;
 
       EditorGUILayout.Space ();
 
