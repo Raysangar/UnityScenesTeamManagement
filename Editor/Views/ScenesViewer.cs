@@ -20,7 +20,7 @@ namespace ScenesTeamManagement
     void OnGUI ()
     {
       EditorGUILayout.BeginVertical ();
-      foreach (Scene scene in scenes)
+      foreach (Scene scene in ScenesManager.Scenes)
       {
         EditorGUILayout.BeginHorizontal ();
         EditorGUILayout.LabelField (scene.Name);
@@ -58,26 +58,7 @@ namespace ScenesTeamManagement
 
     private void initInfo ()
     {
-      scenes = new List<Scene> ();
-      ProjectSettings projectSettings = ProjectSettings.Instance;
-      List<object> checkItems = TrelloAPI.Instance.GetCheckItemsFrom (projectSettings.TrelloSettings.CardId, projectSettings.TrelloSettings.CheckListId);
-      foreach (object checkItem in checkItems)
-      {
-        Dictionary<string, object> checkItemInfo = checkItem as Dictionary<string, object>;
-        bool sceneBlocked = checkItemInfo["state"].Equals ("complete");
-        string sceneName = checkItemInfo["name"] as string;
-        string owner = string.Empty;
-        if (sceneBlocked)
-        {
-          string[] parsedCheckItemName = sceneName.Split (new string[] { " - " }, System.StringSplitOptions.RemoveEmptyEntries);
-          owner = parsedCheckItemName[1];
-          sceneName = parsedCheckItemName[0];
-        }
-        scenes.Add (new Scene (sceneName, checkItemInfo["id"] as string, sceneBlocked, owner));
-      }
+      ScenesManager.LoadScenes ();
     }
-
-    private TrelloAPI api;
-    private List<Scene> scenes;
   }
 }
