@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using UnityEditor;
+using UnityEditor.SceneManagement;
 
 namespace ScenesTeamManagement
 {
@@ -27,25 +29,23 @@ namespace ScenesTeamManagement
 
     public ReadOnlyCollection<Scene> LoadScenes ()
     {
-      scenes.Clear();
+      scenes.Clear ();
       TrelloSettings trelloSettings = ProjectSettings.Instance.TrelloSettings;
 
       if (trelloSettings.Initialized)
       {
-        List<object> checkItems = TrelloAPI.Instance.GetCheckItemsFrom (trelloSettings.CardId, trelloSettings.CheckListId);
-        foreach (object checkItem in checkItems)
+        loadScenesFromTrello ();
+        string[] scenesIds = AssetDatabase.FindAssets ("t:scene", new string[] { ProjectSettings.Instance.ScenesFolderPath });
+        foreach (string sceneId in scenesIds)
         {
-          Dictionary<string, object> checkItemInfo = checkItem as Dictionary<string, object>;
-          bool sceneBlocked = checkItemInfo["state"].Equals ("complete");
-          string sceneName = checkItemInfo["name"] as string;
-          string owner = string.Empty;
-          if (sceneBlocked)
+          string sceneName = AssetDatabase.GUIDToAssetPath (sceneId);
+          int startSubstring = sceneName.LastIndexOf ('/') + 1;
+          sceneName = sceneName.Substring (startSubstring, sceneName.LastIndexOf (".unity") - startSubstring);
+          if (scenes.Find (s => s.Name == sceneName) == null)
           {
-            string[] parsedCheckItemName = sceneName.Split (new string[] { " - " }, System.StringSplitOptions.RemoveEmptyEntries);
-            owner = parsedCheckItemName[1];
-            sceneName = parsedCheckItemName[0];
+            string checkItemId = TrelloAPI.Instance.CreateCheckItem (sceneName);
+            scenes.Add(new Scene (sceneName, checkItemId, false, null));
           }
-          scenes.Add (new Scene (sceneName, checkItemInfo["id"] as string, sceneBlocked, owner));
         }
       }
 
@@ -67,6 +67,26 @@ namespace ScenesTeamManagement
     private ScenesManager ()
     {
       scenes = new List<Scene> ();
+    }
+
+    private void loadScenesFromTrello ()
+    {
+      TrelloSettings trelloSettings = ProjectSettings.Instance.TrelloSettings;
+      List<object> checkItems = TrelloAPI.Instance.GetCheckItemsFrom (trelloSettings.CardId, trelloSettings.CheckListId);
+      foreach (object checkItem in checkItems)
+      {
+        Dictionary<string, object> checkItemInfo = checkItem as Dictionary<string, object>;
+        bool sceneBlocked = checkItemInfo["state"].Equals ("complete");
+        string sceneName = checkItemInfo["name"] as string;
+        string owner = string.Empty;
+        if (sceneBlocked)
+        {
+          string[] parsedCheckItemName = sceneName.Split (new string[] { " - " }, System.StringSplitOptions.RemoveEmptyEntries);
+          owner = parsedCheckItemName[1];
+          sceneName = parsedCheckItemName[0];
+        }
+        scenes.Add (new Scene (sceneName, checkItemInfo["id"] as string, sceneBlocked, owner));
+      }
     }
 
     private List<Scene> scenes;
