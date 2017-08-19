@@ -42,54 +42,91 @@ namespace ScenesTeamManagement
 
       if (GUILayout.Button ("Save Settings"))
       {
-        List<object> boards = TrelloAPI.Instance.GetUserBoards ();
-        foreach (object board in boards)
-        {
-          Dictionary<string, object> boardInfo = board as Dictionary<string, object>;
-          if (boardInfo["name"].Equals (boardName))
-          {
-            projectSettings.TrelloSettings.BoardId = boardInfo["id"] as string;
-          }
-        }
-
-        List<object> lists = TrelloAPI.Instance.GetListsFrom (projectSettings.TrelloSettings.BoardId);
-        foreach (object list in lists)
-        {
-          Dictionary<string, object> listInfo = list as Dictionary<string, object>;
-          if (listInfo["name"].Equals (listName))
-          {
-            projectSettings.TrelloSettings.ListId = listInfo["id"] as string;
-          }
-        }
-
-        List<object> cards = TrelloAPI.Instance.GetCardsFrom (projectSettings.TrelloSettings.ListId);
-        foreach (object card in cards)
-        {
-          Dictionary<string, object> cardInfo = card as Dictionary<string, object>;
-          if (cardInfo["name"].Equals (cardName))
-          {
-            projectSettings.TrelloSettings.CardId = cardInfo["id"] as string;
-          }
-        }
-
-        List<object> checklists = TrelloAPI.Instance.GetChecklistsFrom (projectSettings.TrelloSettings.CardId);
-        foreach (object checklist in checklists)
-        {
-          Dictionary<string, object> checklistInfo = checklist as Dictionary<string, object>;
-          if (checklistInfo["name"].Equals (checklistName))
-          {
-            projectSettings.TrelloSettings.CheckListId = checklistInfo["id"] as string;
-          }
-        }
+        initTrelloSettings (projectSettings);
         EditorUtility.SetDirty (projectSettings);
         AssetDatabase.SaveAssets ();
       }
 
+      if (!string.IsNullOrEmpty (initializationResultMessage))
+      {
+        EditorGUILayout.LabelField (initializationResultMessage);
+      }
+
+    }
+
+    private void initTrelloSettings (ProjectSettings projectSettings)
+    {
+      initializationResultMessage = string.Empty;
+      projectSettings.TrelloSettings.Initialized = false;
+
+      List<object> collection = TrelloAPI.Instance.GetUserBoards ();
+      string id = getIdFromElement (boardName, collection, BoardNotFoundMessage);
+      if (!string.IsNullOrEmpty (id))
+      {
+        projectSettings.TrelloSettings.BoardId = id;
+
+        collection = TrelloAPI.Instance.GetListsFrom (projectSettings.TrelloSettings.BoardId);
+        id = getIdFromElement (listName, collection, ListNotFoundMessage);
+        if (!string.IsNullOrEmpty (id))
+        {
+          projectSettings.TrelloSettings.ListId = id;
+
+          collection = TrelloAPI.Instance.GetCardsFrom (projectSettings.TrelloSettings.ListId);
+          id = getIdFromElement (cardName, collection, CardNotFoundMessage);
+          if (!string.IsNullOrEmpty (id))
+          {
+            projectSettings.TrelloSettings.CardId = id;
+
+            collection = TrelloAPI.Instance.GetChecklistsFrom (projectSettings.TrelloSettings.CardId);
+            id = getIdFromElement (checklistName, collection, ChecklistNotFoundMessage);
+            if (!string.IsNullOrEmpty (id))
+            {
+              projectSettings.TrelloSettings.CheckListId = id;
+              projectSettings.TrelloSettings.Initialized = true;
+              initializationResultMessage = TrelloApiInitializationSucceed;
+            }
+          }
+        }
+      }
+    }
+
+    private string getIdFromElement (string elementName, List<object> collection, string errorMessage)
+    {
+      if (collection == null)
+      {
+        initializationResultMessage = errorMessage;
+        return null;
+      }
+
+      int collectionCount = collection.Count;
+      int iElement = 0;
+      while (iElement < collectionCount && !(collection[iElement] as Dictionary<string, object>)[TrelloNameField].Equals (elementName))
+      {
+        ++iElement;
+      }
+
+      if (iElement == collectionCount)
+      {
+        initializationResultMessage = errorMessage;
+        return null;
+      }
+
+      return (collection[iElement] as Dictionary<string, object>)[TrelloIdField] as string;
     }
 
     private string boardName;
     private string listName;
     private string cardName;
     private string checklistName;
+    private string initializationResultMessage;
+
+    private const string TrelloNameField = "name";
+    private const string TrelloIdField = "id";
+    private const string BoardNotFoundMessage = "Board not found";
+    private const string ListNotFoundMessage = "List not found";
+    private const string CardNotFoundMessage = "Card not found";
+    private const string ChecklistNotFoundMessage = "Checklst not found";
+    private const string TrelloApiInitializationSucceed = "Trello API initialized";
   }
+
 }
