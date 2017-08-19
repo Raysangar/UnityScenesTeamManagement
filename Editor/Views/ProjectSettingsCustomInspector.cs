@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 using UnityEditor;
-using System.Collections.Generic;
 
 namespace ScenesTeamManagement
 {
@@ -19,69 +18,38 @@ namespace ScenesTeamManagement
 
       EditorGUILayout.LabelField ("Slack Parameters");
 
+      projectSettings.SlackIntegrationEnabled = EditorGUILayout.Toggle ("Slack Integration", projectSettings.SlackIntegrationEnabled);
+
+      if (!projectSettings.SlackIntegrationEnabled)
+      {
+        GUI.enabled = false;
+      }
       projectSettings.SlackSettings.WebhookUrl = EditorGUILayout.TextField ("Webhook URL", projectSettings.SlackSettings.WebhookUrl);
+
+      GUI.enabled = true;
 
       EditorGUILayout.Space ();
 
       EditorGUILayout.LabelField ("Trello Parameters");
 
-      boardName = EditorGUILayout.TextField ("Board Name", boardName);
-      listName = EditorGUILayout.TextField ("List Name", listName);
-      cardName = EditorGUILayout.TextField ("Card Name", cardName);
-      checklistName = EditorGUILayout.TextField ("Checklist Name", checklistName);
+      EditorGUI.BeginDisabledGroup (true);
+      EditorGUILayout.Toggle ("API Initialized", projectSettings.TrelloSettings.Initialized);
+      EditorGUI.EndDisabledGroup ();
+
+      EditorGUILayout.Space ();
+
+      if (GUILayout.Button ("Configure API"))
+      {
+        TrelloApiInitializationWindow.ShowWindow ();
+      }
 
       EditorGUILayout.Space ();
 
       if (GUILayout.Button ("Save Settings"))
       {
-        List<object> boards = TrelloAPI.Instance.GetUserBoards ();
-        foreach (object board in boards)
-        {
-          Dictionary<string, object> boardInfo = board as Dictionary<string, object>;
-          if (boardInfo["name"].Equals (boardName))
-          {
-            projectSettings.TrelloSettings.BoardId = boardInfo["id"] as string;
-          }
-        }
-
-        List<object> lists = TrelloAPI.Instance.GetListsFrom (projectSettings.TrelloSettings.BoardId);
-        foreach (object list in lists)
-        {
-          Dictionary<string, object> listInfo = list as Dictionary<string, object>;
-          if (listInfo["name"].Equals (listName))
-          {
-            projectSettings.TrelloSettings.ListId = listInfo["id"] as string;
-          }
-        }
-
-        List<object> cards = TrelloAPI.Instance.GetCardsFrom (projectSettings.TrelloSettings.ListId);
-        foreach (object card in cards)
-        {
-          Dictionary<string, object> cardInfo = card as Dictionary<string, object>;
-          if (cardInfo["name"].Equals (cardName))
-          {
-            projectSettings.TrelloSettings.CardId = cardInfo["id"] as string;
-          }
-        }
-
-        List<object> checklists = TrelloAPI.Instance.GetChecklistsFrom (projectSettings.TrelloSettings.CardId);
-        foreach (object checklist in checklists)
-        {
-          Dictionary<string, object> checklistInfo = checklist as Dictionary<string, object>;
-          if (checklistInfo["name"].Equals (checklistName))
-          {
-            projectSettings.TrelloSettings.CheckListId = checklistInfo["id"] as string;
-          }
-        }
         EditorUtility.SetDirty (projectSettings);
         AssetDatabase.SaveAssets ();
       }
-
     }
-
-    private string boardName;
-    private string listName;
-    private string cardName;
-    private string checklistName;
   }
 }

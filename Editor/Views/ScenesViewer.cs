@@ -20,7 +20,7 @@ namespace ScenesTeamManagement
     void OnGUI ()
     {
       EditorGUILayout.BeginVertical ();
-      foreach (Scene scene in ScenesManager.Scenes)
+      foreach (Scene scene in ScenesManager.Instance.Scenes)
       {
         EditorGUILayout.BeginHorizontal ();
         EditorGUILayout.LabelField (scene.Name);
@@ -58,7 +58,7 @@ namespace ScenesTeamManagement
 
     private void initInfo ()
     {
-      ScenesManager.LoadScenes ();
+      ScenesManager.Instance.LoadScenes ();
     }
   }
 }

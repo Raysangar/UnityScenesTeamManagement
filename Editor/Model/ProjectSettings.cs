@@ -49,6 +49,18 @@ namespace ScenesTeamManagement
       }
     }
 
+    public bool SlackIntegrationEnabled
+    {
+      get
+      {
+        return slackIntegrationEnabled;
+      }
+      set
+      {
+        slackIntegrationEnabled = value;
+      }
+    }
+
     public SlackSettings SlackSettings
     {
       get
@@ -62,6 +74,9 @@ namespace ScenesTeamManagement
 
     [SerializeField]
     private TrelloSettings trelloSettings;
+
+    [SerializeField]
+    private bool slackIntegrationEnabled;
 
     [SerializeField]
     private SlackSettings slackSettings;

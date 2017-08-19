@@ -29,25 +29,25 @@ namespace ScenesTeamManagement
     public List<object> GetUserBoards ()
     {
       Dictionary<string, object> respond = sendRequest (string.Format (UserBoardsRequestFormat, apiKey, apiToken));
-      return (respond == null) ? null : respond["boards"] as List<object>;
+      return (respond == null) ? new List<object>() : respond["boards"] as List<object>;
     }
 
     public List<object> GetListsFrom (string boardId)
     {
       Dictionary<string, object> respond = sendRequest (string.Format (BoardListsRequestFormat, boardId, apiKey, apiToken));
-      return (respond == null) ? null : respond["lists"] as List<object>;
+      return (respond == null) ? new List<object> () : respond["lists"] as List<object>;
     }
 
     public List<object> GetCardsFrom (string listId)
     {
       Dictionary<string, object> respond = sendRequest (string.Format (ListCardsRequestFormat, listId, apiKey, apiToken));
-      return (respond == null) ? null : respond["cards"] as List<object>;
+      return (respond == null) ? new List<object> () : respond["cards"] as List<object>;
     }
 
     public List<object> GetChecklistsFrom (string cardId)
     {
       Dictionary<string, object> respond = sendRequest (string.Format (CardChecklistsRequestFormat, cardId, apiKey, apiToken));
-      return (respond == null) ? null : respond["checklists"] as List<object>;
+      return (respond == null) ? new List<object> () : respond["checklists"] as List<object>;
     }
 
     public List<object> GetCheckItemsFrom (string cardId, string checklistId)
@@ -59,7 +59,7 @@ namespace ScenesTeamManagement
       {
         ++i;
       }
-      return (i < checklistCount) ? (checklists[i] as Dictionary<string, object>)["checkItems"] as List<object> : null;
+      return (i < checklistCount) ? (checklists[i] as Dictionary<string, object>)["checkItems"] as List<object> : new List<object> ();
     }
 
     public void CheckItemOn (string checkItemId, string checkItemName, bool itemChecked)

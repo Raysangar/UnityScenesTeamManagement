@@ -57,6 +57,19 @@ namespace ScenesTeamManagement
       }
     }
 
+    public bool Initialized
+    {
+      get
+      {
+        return initialized;
+      }
+
+      set
+      {
+        initialized = value;
+      }
+    }
+
     [SerializeField]
     private string boardId;
 
@@ -68,5 +81,8 @@ namespace ScenesTeamManagement
 
     [SerializeField]
     private string checkListId;
+
+    [SerializeField]
+    private bool initialized;
   }
 }
