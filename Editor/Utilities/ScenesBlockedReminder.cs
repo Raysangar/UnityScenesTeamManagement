@@ -6,7 +6,6 @@ namespace ScenesTeamManagement
   [InitializeOnLoad]
   public static class ScenesBlockedReminder
   {
-    private static string currentScene;
     static ScenesBlockedReminder ()
     {
       EditorSceneManager.sceneOpened += onSceneOpened;

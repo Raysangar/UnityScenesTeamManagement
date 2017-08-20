@@ -16,6 +16,15 @@ namespace ScenesTeamManagement
     {
       ProjectSettings projectSettings = (ProjectSettings) target;
 
+      if (string.IsNullOrEmpty(scenesPath))
+      {
+        scenesPath = projectSettings.ScenesFolderPath;
+      }
+
+      scenesPath = EditorGUILayout.TextField ("Scenes Folder Path", scenesPath);
+
+      EditorGUILayout.Space ();
+
       EditorGUILayout.LabelField ("Slack Parameters");
 
       projectSettings.SlackIntegrationEnabled = EditorGUILayout.Toggle ("Slack Integration", projectSettings.SlackIntegrationEnabled);
@@ -47,9 +56,17 @@ namespace ScenesTeamManagement
 
       if (GUILayout.Button ("Save Settings"))
       {
+        if (!scenesPath.Equals(projectSettings.ScenesFolderPath))
+        {
+          projectSettings.ScenesFolderPath = scenesPath;
+          ScenesManager.Instance.LoadScenes ();
+        }
+
         EditorUtility.SetDirty (projectSettings);
         AssetDatabase.SaveAssets ();
       }
     }
+
+    private string scenesPath;
   }
 }

@@ -70,6 +70,27 @@ namespace ScenesTeamManagement
       request.Send ();
     }
 
+    public string CreateCheckItem (string checkItemName)
+    {
+      string uri = string.Format (CreateCheckItemFormat, ProjectSettings.Instance.TrelloSettings.CheckListId, checkItemName, apiKey, apiToken);
+      string checkItemId = string.Empty;
+      UnityHTTP.Request request = new UnityHTTP.Request ("POST", uri);
+      request.synchronous = true;
+      request.Send (c => {
+        Dictionary<string, object> dictionary = Json.Deserialize (c.response.Text) as Dictionary<string, object>;
+        checkItemId = dictionary["id"] as string;
+      });
+      return checkItemId;
+    }
+
+    public void DeleteCheckItem (string checkItemId)
+    {
+      string uri = string.Format (DeleteCheckItemFormat, ProjectSettings.Instance.TrelloSettings.CheckListId, checkItemId, apiKey, apiToken);
+      UnityHTTP.Request request = new UnityHTTP.Request ("DELETE", uri);
+      request.synchronous = true;
+      request.Send ();
+    }
+
     public string UserName
     {
       get
@@ -108,5 +129,7 @@ namespace ScenesTeamManagement
     private const string CardChecklistsRequestFormat = "https://api.trello.com/1/cards/{0}?key={1}&token={2}&checklists=all";
     private const string ChecklistItemsRequestFormat = "https://api.trello.com/1/checklists/{0}/checkItems?key={1}&token={2}";
     private const string CardChecklistsUpdateFormat = "https://api.trello.com/1/cards/{0}/checklist/{1}/checkItem/{2}/?key={3}&token={4}&state={5}&name={6}";
+    private const string CreateCheckItemFormat = "https://api.trello.com/1/checklists/{0}/checkItems?name={1}&key={2}&token={3}";
+    private const string DeleteCheckItemFormat = "https://api.trello.com/1/checklists/{0}/checkItems/{1}?key={2}&token={3}";
   }
 }
