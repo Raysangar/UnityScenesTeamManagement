@@ -13,7 +13,7 @@ namespace ScenesTeamManagement
 
     private static void onSceneOpened (UnityEngine.SceneManagement.Scene scene, OpenSceneMode mode)
     {
-      if (ScenesManager.Instance.IsSceneBlockedByOtherMember(scene))
+      if (!BuildPipeline.isBuildingPlayer && ScenesManager.Instance.IsSceneBlockedByOtherMember(scene))
       {
         EditorUtility.DisplayDialog ("Warning!", "This scene is blocked by " + ScenesManager.Instance.GetOwnerOf (scene), "Ok");
       }

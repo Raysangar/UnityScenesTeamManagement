@@ -33,7 +33,8 @@ namespace ScenesTeamManagement
       {
         GUI.enabled = false;
       }
-      projectSettings.SlackSettings.WebhookUrl = EditorGUILayout.TextField ("Webhook URL", projectSettings.SlackSettings.WebhookUrl);
+      projectSettings.SlackSettings.WebhookUrl = EditorGUILayout.TextField("Webhook URL", projectSettings.SlackSettings.WebhookUrl);
+      projectSettings.SlackSettings.ChannelName = EditorGUILayout.TextField ("Channel Name", projectSettings.SlackSettings.ChannelName);
 
       GUI.enabled = true;
 
