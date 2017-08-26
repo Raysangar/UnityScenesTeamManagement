@@ -148,7 +148,7 @@ namespace ScenesTeamManagement
         scenesPerBranch.Add (branchName, branchScene);
 
 
-        List<object> checkItems = TrelloAPI.Instance.GetCheckItemsFrom (trelloSettings.CardId, id);
+        List<object> checkItems = TrelloAPI.Instance.GetCheckItemsFrom (id);
         foreach (object checkItem in checkItems)
         {
           Dictionary<string, object> checkItemInfo = checkItem as Dictionary<string, object>;

@@ -64,16 +64,10 @@ namespace ScenesTeamManagement
       return checklistId;
     }
 
-    public List<object> GetCheckItemsFrom (string cardId, string checklistId)
+    public List<object> GetCheckItemsFrom (string checklistId)
     {
-      List<object> checklists = GetChecklistsFrom (cardId);
-      int i = 0;
-      int checklistCount = checklists.Count;
-      while (i < checklistCount && !(checklists[0] as Dictionary<string, object>)["id"].Equals (checklistId))
-      {
-        ++i;
-      }
-      return (i < checklistCount) ? (checklists[i] as Dictionary<string, object>)["checkItems"] as List<object> : new List<object> ();
+      Dictionary<string, object> respond = sendRequest (string.Format (CheckItemsRequestFormat, checklistId, apiKey, apiToken));
+      return (respond == null) ? new List<object> () : respond["checkItems"] as List<object>;
     }
 
     public void CheckItemOn (string checkItemId, string checkItemName, bool itemChecked)
@@ -166,6 +160,7 @@ namespace ScenesTeamManagement
     private const string BoardListsRequestFormat = "https://api.trello.com/1/boards/{0}?key={1}&token={2}&lists=all";
     private const string ListCardsRequestFormat = "https://api.trello.com/1/lists/{0}?key={1}&token={2}&cards=all";
     private const string CardChecklistsRequestFormat = "https://api.trello.com/1/cards/{0}?key={1}&token={2}&checklists=all";
+    private const string CheckItemsRequestFormat = "https://api.trello.com/1/checklists/{0}?key={1}&token={2}";
     private const string ChecklistItemsRequestFormat = "https://api.trello.com/1/checklists/{0}/checkItems?key={1}&token={2}";
     private const string CardChecklistsUpdateFormat = "https://api.trello.com/1/cards/{0}/checklist/{1}/checkItem/{2}/?key={3}&token={4}&state={5}&name={6}";
     private const string CreateChecklistFormat = "https://api.trello.com/1/cards/{0}/checklists?name={1}&key={2}&token={3}";
