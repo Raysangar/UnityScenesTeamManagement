@@ -23,6 +23,8 @@ namespace ScenesTeamManagement
 
       scenesPath = EditorGUILayout.TextField ("Scenes Folder Path", scenesPath);
 
+      drawBranchesGui (projectSettings);
+
       EditorGUILayout.Space ();
 
       EditorGUILayout.LabelField ("Slack Parameters");
@@ -66,6 +68,43 @@ namespace ScenesTeamManagement
         EditorUtility.SetDirty (projectSettings);
         AssetDatabase.SaveAssets ();
       }
+    }
+
+    private void drawBranchesGui(ProjectSettings projectSettings)
+    {
+      for (int i = 0; i < projectSettings.Branches.Length; ++i)
+      {
+        EditorGUILayout.BeginHorizontal ();
+
+        projectSettings.Branches[i] = EditorGUILayout.TextField ("Branch " + i, projectSettings.Branches[i]);
+        if (GUILayout.Button ("x"))
+        {
+          string[] branches = projectSettings.Branches;
+          projectSettings.Branches = new string[branches.Length - 1];
+          for (int j = 0; j < branches.Length; ++j)
+          {
+            if (j != i)
+            {
+              projectSettings.Branches[(j < i) ? j : (j - 1)] = branches[j];
+            }
+          }
+        }
+
+        EditorGUILayout.EndHorizontal ();
+      }
+
+      EditorGUILayout.BeginHorizontal ();
+
+      EditorGUILayout.LabelField (string.Empty);
+      if (GUILayout.Button ("+"))
+      {
+        string[] branches = projectSettings.Branches;
+        projectSettings.Branches = new string[branches.Length + 1];
+        branches.CopyTo (projectSettings.Branches, 0);
+        projectSettings.Branches[branches.Length - 1] = string.Empty;
+      }
+
+      EditorGUILayout.EndHorizontal ();
     }
 
     private string scenesPath;
