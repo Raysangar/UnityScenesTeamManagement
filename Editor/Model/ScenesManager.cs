@@ -118,13 +118,26 @@ namespace ScenesTeamManagement
 
     public string GetSceneNameFrom (string assetPath)
     {
-      int startSubstring = assetPath.LastIndexOf ('/') + 1;
-      return assetPath.Substring (startSubstring, assetPath.LastIndexOf (".unity") - startSubstring);
+      return assetPath.Replace (ProjectSettings.Instance.ScenesFolderPath, "").TrimStart(new char[] { '/' }).Replace(".unity", "");
     }
 
     public bool IsAssetPathASceneInFolderPath (string assetPath)
     {
       return assetPath.Contains (".unity") && assetPath.Contains (ProjectSettings.Instance.ScenesFolderPath);
+    }
+
+    public void TryOpenScene (Scene scene)
+    {
+      string scenePath = ProjectSettings.Instance.ScenesFolderPath + "/" + scene.Name + ".unity";
+      scenePath = scenePath.Replace ("//", "/");
+      try
+      {
+        UnityEditor.SceneManagement.EditorSceneManager.OpenScene (scenePath);
+      }
+      catch(System.ArgumentException)
+      {
+        UnityEngine.Debug.Log ("Scene " + scenePath + " not found in project");
+      }
     }
 
     private ScenesManager ()

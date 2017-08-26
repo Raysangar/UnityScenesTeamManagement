@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 using UnityEditor;
-using System.Collections.Generic;
+using UnityEditor.SceneManagement;
 
 namespace ScenesTeamManagement
 {
@@ -27,6 +27,12 @@ namespace ScenesTeamManagement
       foreach (Scene scene in ScenesManager.Instance.Scenes)
       {
         EditorGUILayout.BeginHorizontal ();
+
+        if (GUILayout.Button("GO"))
+        {
+          ScenesManager.Instance.TryOpenScene (scene);
+        }
+
         EditorGUILayout.LabelField (scene.Name);
 
         if (scene.Blocked && !scene.Owner.Equals (TrelloAPI.Instance.UserName))
