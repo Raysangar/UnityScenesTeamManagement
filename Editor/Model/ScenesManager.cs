@@ -115,7 +115,7 @@ namespace ScenesTeamManagement
     private void loadScenesFromTrello ()
     {
       TrelloSettings trelloSettings = ProjectSettings.Instance.TrelloSettings;
-      List<object> checkItems = TrelloAPI.Instance.GetCheckItemsFrom (trelloSettings.CardId, trelloSettings.CheckListId);
+      List<object> checkItems = TrelloAPI.Instance.GetCheckItemsFrom (trelloSettings.CheckListId);
       foreach (object checkItem in checkItems)
       {
         Dictionary<string, object> checkItemInfo = checkItem as Dictionary<string, object>;
