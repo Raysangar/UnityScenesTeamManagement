@@ -41,6 +41,18 @@ namespace ScenesTeamManagement
       }
     }
 
+    public string[] Branches
+    {
+      get
+      {
+        return branches;
+      }
+      set
+      {
+        branches = value;
+      }
+    }
+
     public TrelloSettings TrelloSettings
     {
       get
@@ -71,6 +83,9 @@ namespace ScenesTeamManagement
 
     [SerializeField]
     private string scenesFolderPath;
+
+    [SerializeField]
+    private string[] branches = new string[] { "" };
 
     [SerializeField]
     private TrelloSettings trelloSettings;

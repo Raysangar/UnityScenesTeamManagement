@@ -44,19 +44,6 @@ namespace ScenesTeamManagement
       }
     }
 
-    public string CheckListId
-    {
-      get
-      {
-        return checkListId;
-      }
-
-      set
-      {
-        checkListId = value;
-      }
-    }
-
     public bool Initialized
     {
       get
@@ -78,9 +65,6 @@ namespace ScenesTeamManagement
 
     [SerializeField]
     private string cardId;
-
-    [SerializeField]
-    private string checkListId;
 
     [SerializeField]
     private bool initialized;

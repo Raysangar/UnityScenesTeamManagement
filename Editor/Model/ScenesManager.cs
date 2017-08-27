@@ -22,13 +22,33 @@ namespace ScenesTeamManagement
     {
       get
       {
-        return scenes.AsReadOnly ();
+        return scenesPerBranch[currentBranch].Scenes;
+      }
+    }
+
+    public string CurrentBranch
+    {
+      get
+      {
+        return currentBranch;
+      }
+      set
+      {
+        currentBranch = value;
+      }
+    }
+
+    public string CurrentBranchId
+    {
+      get
+      {
+        return scenesPerBranch[currentBranch].ChecklistId;
       }
     }
 
     public ReadOnlyCollection<Scene> LoadScenes ()
     {
-      scenes.Clear ();
+      scenesPerBranch.Clear ();
       TrelloSettings trelloSettings = ProjectSettings.Instance.TrelloSettings;
 
       if (trelloSettings.Initialized)
@@ -47,27 +67,27 @@ namespace ScenesTeamManagement
     public void AddScene (string scenePath)
     {
       string sceneName = GetSceneNameFrom (scenePath);
-      if (scenes.Find (s => s.Name == sceneName) == null)
+      if (scenesPerBranch[currentBranch].GetSceneWithName (sceneName) == null)
       {
         string checkItemId = TrelloAPI.Instance.CreateCheckItem (sceneName);
-        scenes.Add (new Scene (sceneName, checkItemId, false, null));
+        scenesPerBranch[currentBranch].AddScene (new Scene (sceneName, currentBranch, checkItemId, false, null));
       }
     }
 
     public void RemoveScene (string scenePath)
     {
       string sceneName = GetSceneNameFrom (scenePath);
-      Scene scene = scenes.Find (s => s.Name == sceneName);
+      Scene scene = scenesPerBranch[currentBranch].GetSceneWithName (sceneName);
       if (scene != null)
       {
         TrelloAPI.Instance.DeleteCheckItem (scene.CheckItemId);
-        scenes.Remove (scene);
+        scenesPerBranch[currentBranch].Remove (scene);
       }
     }
 
     public Scene GetSceneWithName (string name)
     {
-      return scenes.Find (s => s.Name == name);
+      return scenesPerBranch[currentBranch].GetSceneWithName(name);
     }
 
     public Scene GetSceneAtPath (string path)
@@ -92,14 +112,13 @@ namespace ScenesTeamManagement
 
     public string GetOwnerOf (UnityEngine.SceneManagement.Scene scene)
     {
-      Scene sceneInfo = scenes.Find (s => s.Name == scene.name);
+      Scene sceneInfo = scenesPerBranch[currentBranch].GetSceneWithName(scene.name);
       return (sceneInfo == null) ? string.Empty : sceneInfo.Owner;
     }
 
     public string GetSceneNameFrom (string assetPath)
     {
-      int startSubstring = assetPath.LastIndexOf ('/') + 1;
-      return assetPath.Substring (startSubstring, assetPath.LastIndexOf (".unity") - startSubstring);
+      return assetPath.Replace (ProjectSettings.Instance.ScenesFolderPath, "").TrimStart(new char[] { '/' }).Replace(".unity", "");
     }
 
     public bool IsAssetPathASceneInFolderPath (string assetPath)
@@ -107,32 +126,62 @@ namespace ScenesTeamManagement
       return assetPath.Contains (".unity") && assetPath.Contains (ProjectSettings.Instance.ScenesFolderPath);
     }
 
+    public void TryOpenScene (Scene scene)
+    {
+      string scenePath = ProjectSettings.Instance.ScenesFolderPath + "/" + scene.Name + ".unity";
+      scenePath = scenePath.Replace ("//", "/");
+      try
+      {
+        UnityEditor.SceneManagement.EditorSceneManager.OpenScene (scenePath);
+      }
+      catch(System.ArgumentException)
+      {
+        UnityEngine.Debug.Log ("Scene " + scenePath + " not found in project");
+      }
+    }
+
     private ScenesManager ()
     {
-      scenes = new List<Scene> ();
+      scenesPerBranch = new Dictionary<string, BranchScenes> ();
+      currentBranch = ProjectSettings.Instance.Branches[0];
     }
 
     private void loadScenesFromTrello ()
     {
       TrelloSettings trelloSettings = ProjectSettings.Instance.TrelloSettings;
-      List<object> checkItems = TrelloAPI.Instance.GetCheckItemsFrom (trelloSettings.CheckListId);
-      foreach (object checkItem in checkItems)
+      foreach (string branchName in ProjectSettings.Instance.Branches)
       {
-        Dictionary<string, object> checkItemInfo = checkItem as Dictionary<string, object>;
-        bool sceneBlocked = checkItemInfo["state"].Equals ("complete");
-        string sceneName = checkItemInfo["name"] as string;
-        string owner = string.Empty;
-        if (sceneBlocked)
+        List<object> collection = TrelloAPI.Instance.GetChecklistsFrom (ProjectSettings.Instance.TrelloSettings.CardId);
+        string id = TrelloAPI.Instance.GetIdFromElement (branchName, collection);
+        if (string.IsNullOrEmpty (id))
         {
-          string[] parsedCheckItemName = sceneName.Split (new string[] { " - " }, System.StringSplitOptions.RemoveEmptyEntries);
-          owner = parsedCheckItemName[1];
-          sceneName = parsedCheckItemName[0];
+          id = TrelloAPI.Instance.CreateChecklist (branchName);
         }
-        scenes.Add (new Scene (sceneName, checkItemInfo["id"] as string, sceneBlocked, owner));
+        BranchScenes branchScene = new BranchScenes (id);
+        scenesPerBranch.Add (branchName, branchScene);
+
+
+        List<object> checkItems = TrelloAPI.Instance.GetCheckItemsFrom (id);
+        foreach (object checkItem in checkItems)
+        {
+          Dictionary<string, object> checkItemInfo = checkItem as Dictionary<string, object>;
+          bool sceneBlocked = checkItemInfo["state"].Equals ("complete");
+          string sceneName = checkItemInfo["name"] as string;
+          string owner = string.Empty;
+          if (sceneBlocked)
+          {
+            string[] parsedCheckItemName = sceneName.Split (new string[] { " - " }, System.StringSplitOptions.RemoveEmptyEntries);
+            owner = parsedCheckItemName[1];
+            sceneName = parsedCheckItemName[0];
+          }
+          branchScene.AddScene (new Scene (sceneName, currentBranch, checkItemInfo["id"] as string, sceneBlocked, owner));
+        }
       }
+      
     }
 
-    private List<Scene> scenes;
+    private string currentBranch;
+    private Dictionary<string, BranchScenes> scenesPerBranch;
 
     private static ScenesManager instance;
   }
