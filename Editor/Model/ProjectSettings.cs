@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEditor;
+using System.Collections.Generic;
 
 namespace ScenesTeamManagement
 {
@@ -41,7 +42,7 @@ namespace ScenesTeamManagement
       }
     }
 
-    public string[] Branches
+    public List<string> Branches
     {
       get
       {
@@ -85,7 +86,7 @@ namespace ScenesTeamManagement
     private string scenesFolderPath;
 
     [SerializeField]
-    private string[] branches = new string[] { "" };
+    private List<string> branches = new List<string> { "master" };
 
     [SerializeField]
     private TrelloSettings trelloSettings;
