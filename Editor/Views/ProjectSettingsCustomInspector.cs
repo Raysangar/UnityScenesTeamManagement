@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 using UnityEditor;
-using System.IO;
+using System.Collections.Generic;
 
 namespace ScenesTeamManagement
 {
@@ -17,9 +17,14 @@ namespace ScenesTeamManagement
     {
       ProjectSettings projectSettings = (ProjectSettings) target;
 
+      if (branches == null)
+      {
+        branches = projectSettings.Branches;
+      }
+
       EditorGUILayout.LabelField ("Common Parameters");
 
-      if (string.IsNullOrEmpty(scenesPath))
+      if (string.IsNullOrEmpty (scenesPath))
       {
         scenesPath = projectSettings.ScenesFolderPath;
       }
@@ -27,7 +32,7 @@ namespace ScenesTeamManagement
       EditorGUILayout.BeginHorizontal ();
 
       EditorGUILayout.LabelField ("Scenes Forlder Path:", "\"" + scenesPath + "\"");
-      if (GUILayout.Button("Select"))
+      if (GUILayout.Button ("Select"))
       {
         scenesPath = EditorUtility.OpenFolderPanel ("Select Scenes Folder Directory", "", "");
         int startSubstringIndex = scenesPath.IndexOf ("/Assets") + 1;
@@ -48,7 +53,7 @@ namespace ScenesTeamManagement
       {
         GUI.enabled = false;
       }
-      projectSettings.SlackSettings.WebhookUrl = EditorGUILayout.TextField("Webhook URL", projectSettings.SlackSettings.WebhookUrl);
+      projectSettings.SlackSettings.WebhookUrl = EditorGUILayout.TextField ("Webhook URL", projectSettings.SlackSettings.WebhookUrl);
       projectSettings.SlackSettings.ChannelName = EditorGUILayout.TextField ("Channel Name", projectSettings.SlackSettings.ChannelName);
 
       GUI.enabled = true;
@@ -72,42 +77,45 @@ namespace ScenesTeamManagement
 
       if (GUILayout.Button ("Save Settings"))
       {
-        if (!scenesPath.Equals(projectSettings.ScenesFolderPath))
+        if (!scenesPath.Equals (projectSettings.ScenesFolderPath))
         {
           projectSettings.ScenesFolderPath = scenesPath;
-          ScenesManager.Instance.LoadScenes ();
         }
+        if (projectSettings.Branches.Count > branches.Count)
+        {
+          UserSettings.Instance.CurrentBranchIndex = 0;
+        }
+        projectSettings.Branches = branches;
+        ScenesManager.Instance.LoadScenes ();
 
         EditorUtility.SetDirty (projectSettings);
         AssetDatabase.SaveAssets ();
       }
     }
 
-    private void drawBranchesGui(ProjectSettings projectSettings)
+    private void drawBranchesGui (ProjectSettings projectSettings)
     {
       branchesFoldout = EditorGUILayout.Foldout (branchesFoldout, "Branches");
 
       if (branchesFoldout)
       {
-        for (int i = 0; i < projectSettings.Branches.Length; ++i)
+        branchesToRemove.Clear ();
+        for (int i = 0; i < branches.Count; ++i)
         {
           EditorGUILayout.BeginHorizontal ();
 
-          projectSettings.Branches[i] = EditorGUILayout.TextField ("Branch " + i, projectSettings.Branches[i]);
-          if (GUILayout.Button ("x"))
+          branches[i] = EditorGUILayout.TextField ("Branch " + i, branches[i]);
+          if (branches.Count > 1 && GUILayout.Button ("x"))
           {
-            string[] branches = projectSettings.Branches;
-            projectSettings.Branches = new string[branches.Length - 1];
-            for (int j = 0; j < branches.Length; ++j)
-            {
-              if (j != i)
-              {
-                projectSettings.Branches[(j < i) ? j : (j - 1)] = branches[j];
-              }
-            }
+            branchesToRemove.Add (i);
           }
 
           EditorGUILayout.EndHorizontal ();
+        }
+
+        foreach (int iBranch in branchesToRemove)
+        {
+          branches.RemoveAt (iBranch);
         }
 
         EditorGUILayout.BeginHorizontal ();
@@ -115,10 +123,7 @@ namespace ScenesTeamManagement
         EditorGUILayout.LabelField (string.Empty);
         if (GUILayout.Button ("+"))
         {
-          string[] branches = projectSettings.Branches;
-          projectSettings.Branches = new string[branches.Length + 1];
-          branches.CopyTo (projectSettings.Branches, 0);
-          projectSettings.Branches[branches.Length - 1] = string.Empty;
+          branches.Add ("");
         }
 
         EditorGUILayout.EndHorizontal ();
@@ -126,6 +131,8 @@ namespace ScenesTeamManagement
     }
 
     private string scenesPath;
+    private List<string> branches;
+    private List<int> branchesToRemove = new List<int> ();
     private bool branchesFoldout;
   }
 }

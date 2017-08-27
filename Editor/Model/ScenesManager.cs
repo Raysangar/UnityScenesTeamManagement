@@ -22,7 +22,7 @@ namespace ScenesTeamManagement
     {
       get
       {
-        return scenesPerBranch[currentBranch].Scenes;
+        return scenesPerBranch[CurrentBranch].Scenes;
       }
     }
 
@@ -30,11 +30,7 @@ namespace ScenesTeamManagement
     {
       get
       {
-        return currentBranch;
-      }
-      set
-      {
-        currentBranch = value;
+        return ProjectSettings.Instance.Branches[UserSettings.Instance.CurrentBranchIndex];
       }
     }
 
@@ -42,7 +38,7 @@ namespace ScenesTeamManagement
     {
       get
       {
-        return scenesPerBranch[currentBranch].ChecklistId;
+        return scenesPerBranch[CurrentBranch].ChecklistId;
       }
     }
 
@@ -67,27 +63,27 @@ namespace ScenesTeamManagement
     public void AddScene (string scenePath)
     {
       string sceneName = GetSceneNameFrom (scenePath);
-      if (scenesPerBranch[currentBranch].GetSceneWithName (sceneName) == null)
+      if (scenesPerBranch[CurrentBranch].GetSceneWithName (sceneName) == null)
       {
         string checkItemId = TrelloAPI.Instance.CreateCheckItem (sceneName);
-        scenesPerBranch[currentBranch].AddScene (new Scene (sceneName, currentBranch, checkItemId, false, null));
+        scenesPerBranch[CurrentBranch].AddScene (new Scene (sceneName, CurrentBranch, checkItemId, false, null));
       }
     }
 
     public void RemoveScene (string scenePath)
     {
       string sceneName = GetSceneNameFrom (scenePath);
-      Scene scene = scenesPerBranch[currentBranch].GetSceneWithName (sceneName);
+      Scene scene = scenesPerBranch[CurrentBranch].GetSceneWithName (sceneName);
       if (scene != null)
       {
         TrelloAPI.Instance.DeleteCheckItem (scene.CheckItemId);
-        scenesPerBranch[currentBranch].Remove (scene);
+        scenesPerBranch[CurrentBranch].Remove (scene);
       }
     }
 
     public Scene GetSceneWithName (string name)
     {
-      return scenesPerBranch[currentBranch].GetSceneWithName(name);
+      return scenesPerBranch[CurrentBranch].GetSceneWithName(name);
     }
 
     public Scene GetSceneAtPath (string path)
@@ -112,7 +108,7 @@ namespace ScenesTeamManagement
 
     public string GetOwnerOf (UnityEngine.SceneManagement.Scene scene)
     {
-      Scene sceneInfo = scenesPerBranch[currentBranch].GetSceneWithName(scene.name);
+      Scene sceneInfo = scenesPerBranch[CurrentBranch].GetSceneWithName(scene.name);
       return (sceneInfo == null) ? string.Empty : sceneInfo.Owner;
     }
 
@@ -143,7 +139,6 @@ namespace ScenesTeamManagement
     private ScenesManager ()
     {
       scenesPerBranch = new Dictionary<string, BranchScenes> ();
-      currentBranch = ProjectSettings.Instance.Branches[0];
     }
 
     private void loadScenesFromTrello ()
@@ -174,13 +169,12 @@ namespace ScenesTeamManagement
             owner = parsedCheckItemName[1];
             sceneName = parsedCheckItemName[0];
           }
-          branchScene.AddScene (new Scene (sceneName, currentBranch, checkItemInfo["id"] as string, sceneBlocked, owner));
+          branchScene.AddScene (new Scene (sceneName, CurrentBranch, checkItemInfo["id"] as string, sceneBlocked, owner));
         }
       }
       
     }
 
-    private string currentBranch;
     private Dictionary<string, BranchScenes> scenesPerBranch;
 
     private static ScenesManager instance;

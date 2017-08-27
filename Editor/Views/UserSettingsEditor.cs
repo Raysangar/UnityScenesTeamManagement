@@ -13,7 +13,7 @@ namespace ScenesTeamManagement
 
     private void OnEnable ()
     {
-      userSettings = UserSettings.Instane;
+      userSettings = UserSettings.Instance;
     }
 
     void OnGUI ()

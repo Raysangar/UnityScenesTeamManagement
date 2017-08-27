@@ -6,7 +6,7 @@ namespace ScenesTeamManagement
 {
   public class UserSettings
   {
-    public static UserSettings Instane
+    public static UserSettings Instance
     {
       get
       {
@@ -44,10 +44,23 @@ namespace ScenesTeamManagement
       }
     }
 
+    public int CurrentBranchIndex
+    {
+      get
+      {
+        return currentBranchIndex;
+      }
+      set
+      {
+        currentBranchIndex = value;
+      }
+    }
+
     public void Save ()
     {
       deserializedInfo["TrelloApiKey"] = trelloApiKey;
       deserializedInfo["TrelloApiToken"] = trelloApiToken;
+      deserializedInfo["CurrentBranchIndex"] = currentBranchIndex;
       string path = Application.persistentDataPath + "/BlockedScenesUserSettings.data";
       string serializedInfo = MiniJSON.Json.Serialize (deserializedInfo);
       if (File.Exists (path))
@@ -76,6 +89,7 @@ namespace ScenesTeamManagement
         }
         trelloApiKey = deserializedInfo["TrelloApiKey"] as string;
         trelloApiToken = deserializedInfo["TrelloApiToken"] as string;
+        currentBranchIndex = deserializedInfo.ContainsKey("CurrentBranchIndex") ? (int) deserializedInfo["CurrentBranchIndex"] : 0;
       }
     }
 
@@ -83,6 +97,7 @@ namespace ScenesTeamManagement
 
     private string trelloApiKey;
     private string trelloApiToken;
+    private int currentBranchIndex;
     private Dictionary<string, object> deserializedInfo;
   }
 }

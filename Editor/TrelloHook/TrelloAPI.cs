@@ -19,7 +19,7 @@ namespace ScenesTeamManagement
       {
         if (instance == null)
         {
-          UserSettings userSettings = UserSettings.Instane;
+          UserSettings userSettings = UserSettings.Instance;
           instance = new TrelloAPI (userSettings.TrelloApiKey, userSettings.TrelloApiToken);
         }
         return instance;
