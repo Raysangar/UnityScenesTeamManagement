@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEditor;
+using System.IO;
 
 namespace ScenesTeamManagement
 {
@@ -16,12 +17,24 @@ namespace ScenesTeamManagement
     {
       ProjectSettings projectSettings = (ProjectSettings) target;
 
+      EditorGUILayout.LabelField ("Common Parameters");
+
       if (string.IsNullOrEmpty(scenesPath))
       {
         scenesPath = projectSettings.ScenesFolderPath;
       }
 
-      scenesPath = EditorGUILayout.TextField ("Scenes Folder Path", scenesPath);
+      EditorGUILayout.BeginHorizontal ();
+
+      EditorGUILayout.LabelField ("Scenes Forlder Path:", "\"" + scenesPath + "\"");
+      if (GUILayout.Button("Select"))
+      {
+        scenesPath = EditorUtility.OpenFolderPanel ("Select Scenes Folder Directory", "", "");
+        int startSubstringIndex = scenesPath.IndexOf ("/Assets") + 1;
+        scenesPath = scenesPath.Substring (startSubstringIndex, scenesPath.Length - startSubstringIndex);
+      }
+
+      EditorGUILayout.EndHorizontal ();
 
       drawBranchesGui (projectSettings);
 
@@ -72,41 +85,47 @@ namespace ScenesTeamManagement
 
     private void drawBranchesGui(ProjectSettings projectSettings)
     {
-      for (int i = 0; i < projectSettings.Branches.Length; ++i)
-      {
-        EditorGUILayout.BeginHorizontal ();
+      branchesFoldout = EditorGUILayout.Foldout (branchesFoldout, "Branches");
 
-        projectSettings.Branches[i] = EditorGUILayout.TextField ("Branch " + i, projectSettings.Branches[i]);
-        if (GUILayout.Button ("x"))
+      if (branchesFoldout)
+      {
+        for (int i = 0; i < projectSettings.Branches.Length; ++i)
         {
-          string[] branches = projectSettings.Branches;
-          projectSettings.Branches = new string[branches.Length - 1];
-          for (int j = 0; j < branches.Length; ++j)
+          EditorGUILayout.BeginHorizontal ();
+
+          projectSettings.Branches[i] = EditorGUILayout.TextField ("Branch " + i, projectSettings.Branches[i]);
+          if (GUILayout.Button ("x"))
           {
-            if (j != i)
+            string[] branches = projectSettings.Branches;
+            projectSettings.Branches = new string[branches.Length - 1];
+            for (int j = 0; j < branches.Length; ++j)
             {
-              projectSettings.Branches[(j < i) ? j : (j - 1)] = branches[j];
+              if (j != i)
+              {
+                projectSettings.Branches[(j < i) ? j : (j - 1)] = branches[j];
+              }
             }
           }
+
+          EditorGUILayout.EndHorizontal ();
+        }
+
+        EditorGUILayout.BeginHorizontal ();
+
+        EditorGUILayout.LabelField (string.Empty);
+        if (GUILayout.Button ("+"))
+        {
+          string[] branches = projectSettings.Branches;
+          projectSettings.Branches = new string[branches.Length + 1];
+          branches.CopyTo (projectSettings.Branches, 0);
+          projectSettings.Branches[branches.Length - 1] = string.Empty;
         }
 
         EditorGUILayout.EndHorizontal ();
       }
-
-      EditorGUILayout.BeginHorizontal ();
-
-      EditorGUILayout.LabelField (string.Empty);
-      if (GUILayout.Button ("+"))
-      {
-        string[] branches = projectSettings.Branches;
-        projectSettings.Branches = new string[branches.Length + 1];
-        branches.CopyTo (projectSettings.Branches, 0);
-        projectSettings.Branches[branches.Length - 1] = string.Empty;
-      }
-
-      EditorGUILayout.EndHorizontal ();
     }
 
     private string scenesPath;
+    private bool branchesFoldout;
   }
 }
