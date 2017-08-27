@@ -19,9 +19,7 @@ namespace ScenesTeamManagement
 
     void OnGUI ()
     {
-      int branchIndex = getIndexOfCurrentBranch ();
-      branchIndex = EditorGUILayout.Popup ("Current Branch", branchIndex, ProjectSettings.Instance.Branches);
-      ScenesManager.Instance.CurrentBranch = ProjectSettings.Instance.Branches[branchIndex];
+      UserSettings.Instance.CurrentBranchIndex = EditorGUILayout.Popup ("Current Branch", getIndexOfCurrentBranch (), ProjectSettings.Instance.Branches.ToArray());
 
       scrollPosition = EditorGUILayout.BeginScrollView (scrollPosition);
       foreach (Scene scene in ScenesManager.Instance.Scenes)
