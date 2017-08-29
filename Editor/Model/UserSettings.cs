@@ -53,6 +53,7 @@ namespace ScenesTeamManagement
       set
       {
         currentBranchIndex = value;
+        Save();
       }
     }
 
@@ -60,7 +61,7 @@ namespace ScenesTeamManagement
     {
       deserializedInfo["TrelloApiKey"] = trelloApiKey;
       deserializedInfo["TrelloApiToken"] = trelloApiToken;
-      deserializedInfo["CurrentBranchIndex"] = currentBranchIndex;
+      deserializedInfo["CurrentBranchIndex"] = currentBranchIndex.ToString();
       string path = Application.persistentDataPath + "/BlockedScenesUserSettings.data";
       string serializedInfo = MiniJSON.Json.Serialize (deserializedInfo);
       if (File.Exists (path))
@@ -89,7 +90,7 @@ namespace ScenesTeamManagement
         }
         trelloApiKey = deserializedInfo["TrelloApiKey"] as string;
         trelloApiToken = deserializedInfo["TrelloApiToken"] as string;
-        currentBranchIndex = deserializedInfo.ContainsKey("CurrentBranchIndex") ? (int) deserializedInfo["CurrentBranchIndex"] : 0;
+        currentBranchIndex = deserializedInfo.ContainsKey("CurrentBranchIndex") ? int.Parse(deserializedInfo["CurrentBranchIndex"] as string) : 0;
       }
     }
 
