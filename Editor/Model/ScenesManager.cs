@@ -6,6 +6,30 @@ namespace ScenesTeamManagement
 {
   public class ScenesManager
   {
+    public class SceneBlockedAtOtherBranchResponse
+    {
+      public bool IsBlocked;
+      public Scene Scene;
+      public string BranchName;
+
+      public static SceneBlockedAtOtherBranchResponse GetNotBlockedResponse()
+      {
+        return new SceneBlockedAtOtherBranchResponse(false, null, null);
+      }
+
+      public static SceneBlockedAtOtherBranchResponse GetBlockedResponse(Scene scene, string branchName)
+      {
+        return new SceneBlockedAtOtherBranchResponse(true, scene, branchName);
+      }
+
+      private SceneBlockedAtOtherBranchResponse(bool blocked, Scene scene, string branchName)
+      {
+        IsBlocked = blocked;
+        Scene = scene;
+        BranchName = branchName;
+      }
+    }
+
     public static ScenesManager Instance
     {
       get
@@ -30,6 +54,10 @@ namespace ScenesTeamManagement
     {
       get
       {
+        if (UserSettings.Instance.CurrentBranchIndex >= ProjectSettings.Instance.Branches.Count)
+        {
+          UserSettings.Instance.CurrentBranchIndex = 0;
+        }
         return ProjectSettings.Instance.Branches[UserSettings.Instance.CurrentBranchIndex];
       }
     }
@@ -89,6 +117,32 @@ namespace ScenesTeamManagement
     public Scene GetSceneAtPath (string path)
     {
       return GetSceneWithName (GetSceneNameFrom (path));
+    }
+
+    public SceneBlockedAtOtherBranchResponse IsSceneBlockedInOtherBranch(Scene scene)
+    {
+      return IsSceneBlockedInOtherBranch(scene.Name);
+    }
+
+    public SceneBlockedAtOtherBranchResponse IsSceneBlockedInOtherBranch(UnityEngine.SceneManagement.Scene scene)
+    {
+      return IsSceneBlockedInOtherBranch(GetSceneNameFrom(scene.path));
+    }
+
+    public SceneBlockedAtOtherBranchResponse IsSceneBlockedInOtherBranch(string sceneName)
+    {
+      foreach (KeyValuePair<string, BranchScenes> scenesInBranch in scenesPerBranch)
+      {
+        if (scenesInBranch.Key != CurrentBranch)
+        {
+          Scene searchScene = scenesInBranch.Value.GetSceneWithName(sceneName);
+          if (searchScene != null && searchScene.Blocked)
+          {
+            return SceneBlockedAtOtherBranchResponse.GetBlockedResponse(searchScene, scenesInBranch.Key);
+          }
+        }
+      }
+      return SceneBlockedAtOtherBranchResponse.GetNotBlockedResponse();
     }
 
     public bool IsSceneBlockedByOtherMember (Scene scene)

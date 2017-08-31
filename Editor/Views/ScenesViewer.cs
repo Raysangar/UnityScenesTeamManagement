@@ -33,7 +33,8 @@ namespace ScenesTeamManagement
 
         EditorGUILayout.LabelField (scene.Name);
 
-        if (scene.Blocked && !scene.Owner.Equals (TrelloAPI.Instance.UserName))
+        ScenesManager.SceneBlockedAtOtherBranchResponse sceneBlockedInOtherBranch = ScenesManager.Instance.IsSceneBlockedInOtherBranch(scene);
+        if (sceneBlockedInOtherBranch.IsBlocked || (scene.Blocked && !scene.Owner.Equals (TrelloAPI.Instance.UserName)))
         {
           GUI.enabled = false;
         }
@@ -52,7 +53,15 @@ namespace ScenesTeamManagement
           }
         }
 
-        EditorGUILayout.LabelField (scene.Blocked ? ("Blocked by " + scene.Owner) : string.Empty);
+        if (sceneBlockedInOtherBranch.IsBlocked)
+        {
+          EditorGUILayout.LabelField("Blocked by " + sceneBlockedInOtherBranch.Scene.Owner + " at branch " + sceneBlockedInOtherBranch.BranchName);
+        }
+        else
+        {
+          EditorGUILayout.LabelField (scene.Blocked ? ("Blocked by " + scene.Owner) : string.Empty);
+        }
+
 
         EditorGUILayout.EndHorizontal ();
       }
