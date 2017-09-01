@@ -190,6 +190,28 @@ namespace ScenesTeamManagement
       }
     }
 
+    public SceneBlockedAtOtherBranchResponse HasSceneBeenBlockedRecently(Scene scene)
+    {
+      foreach(KeyValuePair<string, BranchScenes> branch in scenesPerBranch)
+      {
+        Scene branchScene = branch.Value.GetSceneWithName(scene.Name);
+        if (branchScene != null)
+        {
+          List<object> checkItems = TrelloAPI.Instance.GetCheckItemsFrom(branch.Value.ChecklistId);
+          Dictionary<string, object> checkItemInfo = checkItems.Find(c => ((c as Dictionary<string, object>)["id"] as string) == branchScene.CheckItemId) as Dictionary<string, object>;
+          bool sceneBlocked = checkItemInfo["state"].Equals("complete");
+          if (sceneBlocked)
+          {
+            string sceneName = checkItemInfo["name"] as string;
+            string[] parsedCheckItemName = sceneName.Split(new string[] { " - " }, System.StringSplitOptions.RemoveEmptyEntries);
+            branchScene.OnSceneBlockedBy(parsedCheckItemName[1]);
+            return SceneBlockedAtOtherBranchResponse.GetBlockedResponse(branchScene, branch.Key);
+          }
+        }
+      }
+      return SceneBlockedAtOtherBranchResponse.GetNotBlockedResponse();
+    }
+
     private ScenesManager ()
     {
       scenesPerBranch = new Dictionary<string, BranchScenes> ();

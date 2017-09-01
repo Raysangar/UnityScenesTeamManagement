@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 using UnityEditor;
-using UnityEditor.SceneManagement;
+using System.Collections.Generic;
 
 namespace ScenesTeamManagement
 {
@@ -17,11 +17,17 @@ namespace ScenesTeamManagement
       initInfo ();
     }
 
+    private void OnFocus()
+    {
+      initInfo();
+    }
+
     void OnGUI ()
     {
       UserSettings.Instance.CurrentBranchIndex = EditorGUILayout.Popup ("Current Branch", getIndexOfCurrentBranch (), ProjectSettings.Instance.Branches.ToArray());
 
       scrollPosition = EditorGUILayout.BeginScrollView (scrollPosition);
+
       foreach (Scene scene in ScenesManager.Instance.Scenes)
       {
         EditorGUILayout.BeginHorizontal ();
@@ -45,7 +51,7 @@ namespace ScenesTeamManagement
         {
           if (blocked)
           {
-            scene.BlockScene ();
+            tryToBlock(scene);
           }
           else
           {
@@ -81,6 +87,19 @@ namespace ScenesTeamManagement
         ++index;
       }
       return index;
+    }
+
+    private void tryToBlock(Scene scene)
+    {
+      ScenesManager.SceneBlockedAtOtherBranchResponse response = ScenesManager.Instance.HasSceneBeenBlockedRecently(scene);
+      if (response.IsBlocked)
+      {
+        EditorUtility.DisplayDialog("Error!", "Scene has been blocked by " + response.Scene.Owner + " at branch " + response.BranchName, "Ok");
+      }
+      else
+      {
+        scene.BlockScene();
+      }
     }
 
     private void initInfo ()

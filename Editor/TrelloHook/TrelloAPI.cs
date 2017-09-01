@@ -141,7 +141,7 @@ namespace ScenesTeamManagement
       { }
       if (!string.IsNullOrEmpty (www.error))
       {
-        Debug.Log (www.error);
+        Debug.Log (www.error + " -> " + www.text);
       }
       return string.IsNullOrEmpty (www.error) ? Json.Deserialize (www.text) as Dictionary<string, object> : null;
     }
