@@ -17,6 +17,14 @@ namespace ScenesTeamManagement
       {
         EditorUtility.DisplayDialog ("Warning!", "This scene is blocked by " + ScenesManager.Instance.GetOwnerOf (scene), "Ok");
       }
+      else
+      {
+        ScenesManager.SceneBlockedAtOtherBranchResponse sceneBlockedAtOtherBranch = ScenesManager.Instance.IsSceneBlockedInOtherBranch(scene);
+        if (sceneBlockedAtOtherBranch.IsBlocked)
+        {
+          EditorUtility.DisplayDialog("Warning!", "This scene is blocked by " + sceneBlockedAtOtherBranch.Scene.Owner + " at branch " + sceneBlockedAtOtherBranch.BranchName, "Ok");
+        }
+      }
     }
   }
 }

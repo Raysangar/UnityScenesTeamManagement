@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 using UnityEditor;
-using UnityEditor.SceneManagement;
+using System.Collections.Generic;
 
 namespace ScenesTeamManagement
 {
@@ -17,11 +17,17 @@ namespace ScenesTeamManagement
       initInfo ();
     }
 
+    private void OnFocus()
+    {
+      initInfo();
+    }
+
     void OnGUI ()
     {
       UserSettings.Instance.CurrentBranchIndex = EditorGUILayout.Popup ("Current Branch", getIndexOfCurrentBranch (), ProjectSettings.Instance.Branches.ToArray());
 
       scrollPosition = EditorGUILayout.BeginScrollView (scrollPosition);
+
       foreach (Scene scene in ScenesManager.Instance.Scenes)
       {
         EditorGUILayout.BeginHorizontal ();
@@ -33,7 +39,8 @@ namespace ScenesTeamManagement
 
         EditorGUILayout.LabelField (scene.Name);
 
-        if (scene.Blocked && !scene.Owner.Equals (TrelloAPI.Instance.UserName))
+        ScenesManager.SceneBlockedAtOtherBranchResponse sceneBlockedInOtherBranch = ScenesManager.Instance.IsSceneBlockedInOtherBranch(scene);
+        if (sceneBlockedInOtherBranch.IsBlocked || (scene.Blocked && !scene.Owner.Equals (TrelloAPI.Instance.UserName)))
         {
           GUI.enabled = false;
         }
@@ -44,7 +51,7 @@ namespace ScenesTeamManagement
         {
           if (blocked)
           {
-            scene.BlockScene ();
+            tryToBlock(scene);
           }
           else
           {
@@ -52,7 +59,15 @@ namespace ScenesTeamManagement
           }
         }
 
-        EditorGUILayout.LabelField (scene.Blocked ? ("Blocked by " + scene.Owner) : string.Empty);
+        if (sceneBlockedInOtherBranch.IsBlocked)
+        {
+          EditorGUILayout.LabelField("Blocked by " + sceneBlockedInOtherBranch.Scene.Owner + " at branch " + sceneBlockedInOtherBranch.BranchName);
+        }
+        else
+        {
+          EditorGUILayout.LabelField (scene.Blocked ? ("Blocked by " + scene.Owner) : string.Empty);
+        }
+
 
         EditorGUILayout.EndHorizontal ();
       }
@@ -72,6 +87,19 @@ namespace ScenesTeamManagement
         ++index;
       }
       return index;
+    }
+
+    private void tryToBlock(Scene scene)
+    {
+      ScenesManager.SceneBlockedAtOtherBranchResponse response = ScenesManager.Instance.HasSceneBeenBlockedRecently(scene);
+      if (response.IsBlocked)
+      {
+        EditorUtility.DisplayDialog("Error!", "Scene has been blocked by " + response.Scene.Owner + " at branch " + response.BranchName, "Ok");
+      }
+      else
+      {
+        scene.BlockScene();
+      }
     }
 
     private void initInfo ()
